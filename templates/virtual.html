@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Virtual Detection | Smart Workout Recommender</title>
+
+  <!-- Live Server preview -->
+  <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a class="back" href="home.html">← Back</a>
+      <h2>📷 Virtual Detection (Preview)</h2>
+    </div>
+
+    <p class="muted left">
+      For now, this page only opens the camera and shows a live preview. Detection will be added later.
+    </p>
+
+    <div class="camera-box">
+      <video id="video" autoplay playsinline></video>
+    </div>
+
+    <div class="row-buttons">
+      <button class="btn" id="startBtn" type="button">Start Camera</button>
+      <button class="btn secondary-btn" id="stopBtn" type="button">Stop Camera</button>
+    </div>
+
+    <p id="msg" class="muted left"></p>
+  </div>
+
+  <script>
+    let stream;
+
+    async function startCamera() {
+      const msg = document.getElementById("msg");
+      msg.textContent = "";
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        document.getElementById("video").srcObject = stream;
+        msg.textContent = "Camera started ✅";
+      } catch (err) {
+        msg.textContent = "Camera access denied or not available ❌";
+        console.error(err);
+      }
+    }
+
+    function stopCamera() {
+      const msg = document.getElementById("msg");
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        document.getElementById("video").srcObject = null;
+        msg.textContent = "Camera stopped.";
+      }
+    }
+
+    document.getElementById("startBtn").addEventListener("click", startCamera);
+    document.getElementById("stopBtn").addEventListener("click", stopCamera);
+  </script>
+</body>
+</html>

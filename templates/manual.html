@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manual Input | Smart Workout Recommender</title>
+
+  <!-- Live Server preview -->
+  <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+     <div class="page">
+    <div class="container">
+
+    <div class="topbar">
+      <a class="back" href="home.html">← Back</a>
+      <h1>📝 Manual Input</h1>
+    </div>
+
+    <form action="#">
+      <h2>1) Select Available Equipment</h2>
+
+      <div class="grid">
+        <label class="check"><input type="checkbox" name="equipment" value="Dumbbells"> Dumbbells</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Bench"> Bench</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Barbell"> Barbell</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Cable Machine"> Cable Machine</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Treadmill"> Treadmill</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Bodyweight"> Bodyweight</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Weight Plates"> Weight Plates</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Resitivity Band"> Resitivity Band</label>
+        <label class="check"><input type="checkbox" name="equipment" value="Kettlebell"> Kettlebell</label>
+      </div>
+
+      <h2>2) Workout Preferences</h2>
+
+      <div class="row">
+        <div class="col">
+          <label>Goal</label>
+          <select name="goal">
+            <option>Fat Loss</option>
+            <option selected>Muscle Gain</option>
+            <option>Strength</option>
+          </select>
+        </div>
+
+        <div class="col">
+          <label>Difficulty</label>
+          <select name="difficulty">
+            <option selected>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+
+        <div class="col">
+          <label>Duration</label>
+          <select name="duration">
+            <option value="15">15 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="45">45 min</option>
+            <option value="60">60 min</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" type="submit">✅ Generate Workout</button>
+      <p class="muted left">Workout generation will be connected to Python later.</p>
+    </form>
+  </div>
+</div>
+</body>
+</html>
