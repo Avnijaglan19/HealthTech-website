@@ -11,11 +11,182 @@
 
 class Workout(object):
 
-    def __init__(self, diff, duration):
-        self.diff = diff 
-        self.duration = duration
-        self.exercises = "null"
-        self.equipment = "null"
+    def __init__(self, diff, duration, goal):
+        self.__diff = diff 
+        self.__duration = duration
+        self.__goal = goal
+        self.__equipment = "null"
+        self.__mGroup = "null"
+        self.__prompt = "null"
+
+# ================================================================================================
+#
+# set__diff(self, difficulty)
+# Purpose: Allows user to set the difficulty of the workout.
+# Input: self, difficulty
+# Output: n/a
+#
+# ================================================================================================ 
+
+    def set__diff(self, difficulty):
+        self.__diff = difficulty    
 
 
 
+    
+# ================================================================================================
+#
+# get__diff(self)
+# Purpose: Returns the value of the private variable, __diff, which is the difficulty of the 
+# workout.
+# Input: self
+# Output: self.__diff
+#
+# ================================================================================================ 
+
+    def get__diff(self):
+            return self.__diff
+        
+
+
+
+# ================================================================================================
+#
+# set__duration(self, duration)
+# Purpose: Allows user to set the private member __duration = duration. 
+# Input: self, duration
+# Output: n/a
+#
+# ================================================================================================ 
+
+    def set__duration(self, duration):
+        self.__duration = duration  
+
+
+    
+# ================================================================================================
+#
+# get__duration(self)
+# Purpose: Returns the value of the private variable, __duration, which is the duration of the 
+# workout.
+# Input: self
+# Output: self.__duration
+#
+# ================================================================================================ 
+
+    def get__duration(self):
+        return self.__duration
+    
+
+
+# ================================================================================================
+#
+# set__exercises(self, exercises):
+# Purpose: Allows user to set the private member __exercises = exercises. 
+# Input: self, exercises
+# Output: n/a
+#
+# ================================================================================================ 
+
+    def set__goal(self, goal):
+        self.__goal = goal
+
+
+    
+# ================================================================================================
+#
+# get__goal(self):
+# Purpose: Returns the value of the private variable, __goal, which is the goal for the workout.
+# Input: self
+# Output: self.__goal
+#
+# ================================================================================================ 
+
+    def get__goal(self):
+        return self.__goal
+
+
+
+# ================================================================================================
+#
+# set__equipment(self, equipment):
+# Purpose: Allows the user to set the private member __equipment = equipment. 
+# Input: self, equipment
+# Output: n/a
+#
+# ================================================================================================ 
+
+    def set__equipment(self, equipment):
+        self.__equipment = equipment
+
+
+    
+# ================================================================================================
+#
+# get__equipment(self):
+# Purpose: Returns the value of the private variable, __equipment, which is the equipment for the 
+# workout.
+# Input: self
+# Output: self.__equipment
+#
+# ================================================================================================ 
+
+    def get__equipment(self):
+        return self.__equipment
+    
+
+
+# ================================================================================================
+#
+# set__mGroup(self, muscleGroup):
+# Purpose: Allows user to set the private member __mGroup = muscleGroup. 
+# Input: self, muscleGroup
+# Output: n/a
+#
+# ================================================================================================ 
+
+    def set__mGroup(self, muscleGroup):
+        self.__mGroup = muscleGroup
+
+
+    
+# ================================================================================================
+#
+# get__mGroup(self):
+# Purpose: Returns the value of the private variable, __mGroup, which is the muscle group for the 
+# workout.
+# Input: self
+# Output: self.__mGroup
+#
+# ================================================================================================ 
+
+    def get__mGroup(self):
+        return self.__mGroup
+    
+
+
+# ================================================================================================
+#
+# PromptGenerator(self):
+# Purpose: Allows user to generate a prompt for the OpenAI API to generate a workout based on the 
+# difficulty, duration, exercises, equipment, and muscle group variables. 
+# Input: self, 
+# Output: n/a
+#
+# ================================================================================================ 
+
+    def PromptGenerator(self):
+        pass
+    
+# ================================================================================================
+#
+# get__prompt(self):
+# Purpose: Returns the value of the private variable, __prompt, which is the prompt for the OpenAI
+#  API to generate a workout.
+# Input: self
+# Output: self.__prompt
+#
+# ================================================================================================ 
+
+    def get__prompt(self):
+        return self.__prompt
