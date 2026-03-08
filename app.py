@@ -10,3 +10,9 @@ def home():
 @app.route("/login")
 def login():
     return render_template("login.html")
+@app.route("/manual")
+def manual():
+    return render_template("manual.html")
+@app.route("/virtual")
+def virtual():
+    return render_template("virtual.html")
