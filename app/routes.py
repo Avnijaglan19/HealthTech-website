@@ -10,6 +10,7 @@ from . import app
 # Will render home.html when user visits "/"
 # ------------------------------------------
 @app.route("/")
+@app.route("/home")
 def home():
     return render_template("home.html")
 
