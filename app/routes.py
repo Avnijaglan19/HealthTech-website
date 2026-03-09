@@ -2,9 +2,8 @@
 Main Backend for HealthTech! This file will initialize Flask
 """
 from flask import Flask, render_template
-from __init__ import Workout # importing workout class
 
-app = Flask(__name__)
+from . import app
 
 # ------------------------------------------
 # Route for home page
@@ -38,6 +37,3 @@ def manual():
 def virtual():
     return render_template("virtual.html")
 
-# runs Flask
-if __name__ == "__main__":
-    app.run(debug=True)
