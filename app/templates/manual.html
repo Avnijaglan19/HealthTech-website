@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Manual Input | Smart Workout Recommender</title>
 
+<<<<<<< HEAD:app/templates/manual.html
   <!-- Live Server preview -->
   <link rel="stylesheet" href="{{ url_for('static' , filename= 'style.css')}}">
+=======
+  
+  <link rel="stylesheet" href="../static/style.css">
+>>>>>>> b393a57 (Updated login page design and added homepage layout):templates/manual.html
 </head>
 
 <body>
@@ -61,6 +66,22 @@
             <option value="30" selected>30 min</option>
             <option value="45">45 min</option>
             <option value="60">60 min</option>
+          </select>
+        </div>
+      </div>
+
+        <div class="col">
+          <label>Muscle Group</label>
+          <select name="muscle group">
+            <option value="Shoulders">Shoulder</option>
+            <option value="Chest" selected>Chest</option>
+            <option value="Back">Back</option>
+            <option value="Ham Strings"> Ham Strings</option>
+            <option value="Quard">Quard</option>
+            <option value="Glutes">Glutes</option>
+            <option value="Biceps">Biceps</option>
+            <option value="Triceps">Triceps</option>
+            <option value="Abs">Abs</option>
           </select>
         </div>
       </div>
