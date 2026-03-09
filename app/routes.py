@@ -2,8 +2,8 @@
 Main Backend for HealthTech! This file will initialize Flask
 """
 from flask import Flask, render_template
-
 from . import app
+from app.forms import LoginForm  # Importing the LoginForm class from forms.py
 
 # ------------------------------------------
 # Route for home page
@@ -20,7 +20,8 @@ def home():
 # ------------------------------------------ 
 @app.route("/login")
 def login():
-    return render_template("login.html")
+    form = LoginForm()
+    return render_template("login.html", form=form)
 
 # ------------------------------------------
 # Route for manual
