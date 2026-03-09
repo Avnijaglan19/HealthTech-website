@@ -16,3 +16,6 @@ def manual():
 @app.route("/virtual")
 def virtual():
     return render_template("virtual.html")
+
+if __name__ == "__main__":
+    app.run(debug=True)

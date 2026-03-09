@@ -189,4 +189,4 @@ class Workout(object):
 # ================================================================================================ 
 
     def get__prompt(self):
-        return self.__prompt
+        return self.__prompt 
