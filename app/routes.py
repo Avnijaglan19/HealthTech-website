@@ -76,3 +76,8 @@ def manual():
 @app.route("/virtual")
 def virtual():
     return render_template("virtual.html")
+
+# RESULTS
+@app.route("/results")
+def results():
+    return render_template("results.html")
