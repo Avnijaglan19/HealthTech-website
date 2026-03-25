@@ -47,6 +47,14 @@ def signup():
 
         conn = get_db()
         cursor = conn.cursor()
+    
+        # checking if email already exists
+        existing_user = cursor.execute(
+            "SELECT * FROM users WHERE email = ?", (email,)
+        ).fetchone()
+        if existing_user:
+            conn.close()
+            return "Email already registered. Try logging in."
 
         cursor.execute("""
             INSERT INTO users (first_name, last_name, email, password)
