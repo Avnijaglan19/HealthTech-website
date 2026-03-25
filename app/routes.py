@@ -71,7 +71,9 @@ def signup():
 # HOME 
 @app.route("/home")
 def home():
-    return render_template("home.html")
+    if "user_id" not in session:
+        return redirect(url_for("login")) 
+    return render_template("home.html") #anyone who isn't logged in will be sent to login
 
 
 # MANUAL
