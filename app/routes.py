@@ -3,12 +3,13 @@ Main Backend for HealthTech! This file will initialize Flask
 """
 from flask import render_template, request, redirect, url_for, session, flash
 from app import app
-from app.db import get_db
+from supabase_client import supabase
 
 
-@app.route("/") 
+@app.route("/")
 def first_page():
     return redirect(url_for("signup"))
+
 
 # LOGIN
 @app.route("/login", methods=["GET", "POST"])
@@ -17,22 +18,27 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        print(f"Login attempt: email={email}, password={password}")  
+        try:
+            result = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
 
-        conn = get_db()
-        user = conn.execute(
-            "SELECT * FROM users WHERE email = ? AND password = ?", (email, password)
-        ).fetchone()
-        conn.close()
+            session["user_id"] = result.user.id
+            session["email"] = result.user.email
 
-        if user:
+            flash("Login successful!")
             return redirect(url_for("home"))
-        else:
-            return "Invalid email or password"
+
+        except Exception:
+            flash("Invalid email or password.")
+            return redirect(url_for("login"))
+
     return render_template("login.html")
 
+
 # SIGNUP
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == 'POST':
         first_name = request.form.get('first_name')
@@ -47,14 +53,6 @@ def signup():
 
         conn = get_db()
         cursor = conn.cursor()
-    
-        # checking if email already exists
-        existing_user = cursor.execute(
-            "SELECT * FROM users WHERE email = ?", (email,)
-        ).fetchone()
-        if existing_user:
-            conn.close()
-            return "Email already registered. Try logging in."
 
         cursor.execute("""
             INSERT INTO users (first_name, last_name, email, password)
@@ -66,33 +64,22 @@ def signup():
 
         return redirect(url_for('login'))
 
-    return render_template('signup.html')
+    return render_template("signup.html")
 
-# HOME 
+
+# HOME
 @app.route("/home")
 def home():
-    if "user_id" not in session:
-        return redirect(url_for("login")) 
-    return render_template("home.html") # anyone who isn't logged in will be sent to login
+    return render_template("home.html")
 
 
-# MANUAL
+# MANUAL PAGE
 @app.route("/manual")
 def manual():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     return render_template("manual.html")
+
 
 # VIRTUAL 
 @app.route("/virtual")
 def virtual():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     return render_template("virtual.html")
-
-# RESULTS
-@app.route("/results")
-def results():
-    if "user_is" not in session:
-        return redirect(url_for("login"))
-    return render_template("results.html")
