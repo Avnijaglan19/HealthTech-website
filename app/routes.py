@@ -49,22 +49,22 @@ def signup():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
 
-        print(first_name, last_name, email, password)
         if password != confirm_password:
-            return "Passwords do not match"
+            flash("Passwords do not match.")
+            return redirect(url_for('signup'))
 
-        conn = get_db()
-        cursor = conn.cursor()
+        try:
+            supabase.auth.sign_up({
+                "email": email,
+                "password": password
+            })
 
-        cursor.execute("""
-            INSERT INTO users (first_name, last_name, email, password)
-            VALUES (?, ?, ?, ?)
-        """, (first_name, last_name, email, password))
+            flash("Signup successful! Please log in.")
+            return redirect(url_for('login'))
 
-        conn.commit()
-        conn.close()
-
-        return redirect(url_for('login'))
+        except Exception:
+            flash("Unable to create account. Please check your details and try again.")
+            return redirect(url_for('signup'))
 
     return render_template("signup.html")
 
