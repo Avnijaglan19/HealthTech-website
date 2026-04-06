@@ -11,13 +11,13 @@
 
 class Workout(object):
 
-    def __init__(self, diff, duration, goal):
+    def __init__(self, diff, duration, goal, equipment, muscleGroup):
         self.__diff = diff 
         self.__duration = duration
         self.__goal = goal
-        self.__equipment = "null"
-        self.__mGroup = "null"
-        self.__prompt = "null"
+        self.__equipment = equipment
+        self.__mGroup = muscleGroup
+        self.__prompt = self.PromptGenerator()
 
 # ================================================================================================
 #
@@ -176,7 +176,20 @@ class Workout(object):
 # ================================================================================================ 
 
     def PromptGenerator(self):
-        pass
+        self.__prompt = "You are a certified strength and conditioning coach. Create a safe, "\
+        f"structured workout plan from the following constraints.\n\n" \
+        f"Goal: {self.__goal}\n" \
+        f"Difficulty: {self.__diff}\n" \
+        f"Duration: {self.__duration}\n" \
+        f"Target Muscle Group: {self.__mGroup}\n" \
+        f"Available Equipment: {self.__equipment}\n\n" \
+        "Output requirements:\n" \
+        "1) Warm-up (5-10 minutes).\n" \
+        "2) Main workout with sets, reps, rest, and exercise cues.\n" \
+        "3) Cool-down (3-5 minutes).\n" \
+        "4) Mention substitutions using only listed equipment.\n" \
+        "5) Keep total session within the requested duration.\n" \
+        "6) Return result in clean markdown with clear headings."
     
 # ================================================================================================
 #

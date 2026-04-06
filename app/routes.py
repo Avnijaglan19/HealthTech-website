@@ -3,6 +3,8 @@ Main Backend for HealthTech! This file will initialize Flask
 """
 from flask import render_template, request, redirect, url_for, session, flash
 from app import app
+from app.forms import LoginForm, WorkoutForm
+from app.workout import Workout
 from supabase_client import supabase
 
 
@@ -74,12 +76,48 @@ def home():
 
 
 # MANUAL PAGE
-@app.route("/manual")
+@app.route("/manual", methods=["GET", "POST"])
 def manual():
-    return render_template("manual.html")
+    wform = WorkoutForm()
+    if wform.validate_on_submit():
+        # Create Workout object with form data
+        workout = Workout(
+            wform.difficulty.data,
+            wform.duration.data,
+            wform.goal.data,
+            wform.equip.data,
+            wform.muscle_group.data,
+        )
+        
+        # Generate the prompt
+        workout.PromptGenerator()
+        
+        # Store workout object in session
+        session["workout"] = {
+            "difficulty": workout.get__diff(),
+            "duration": workout.get__duration(),
+            "goal": workout.get__goal(),
+            "equipment": workout.get__equipment(),
+            "muscle_group": workout.get__mGroup(),
+            "prompt": workout.get__prompt()
+        }
+
+        return redirect(url_for("results"))
+
+
+    return render_template("manual.html", title="Workout Generator", form=wform)
 
 
 # VIRTUAL 
 @app.route("/virtual")
 def virtual():
     return render_template("virtual.html")
+
+@app.route("/results")
+def results():
+    workout_data = session.get("workout", None)
+    if workout_data is None:
+        flash("No workout data found. Please submit the form first.")
+        return redirect(url_for("manual"))
+    
+    return render_template("results.html", workout=workout_data)
