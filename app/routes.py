@@ -88,11 +88,11 @@ def manual():
 def virtual():
     if "user_id" not in session:
         return redirect(url_for("login"))
-    return render_template("virtual.html")
+    return render_template("virtual.html") 
 
 # RESULTS
 @app.route("/results")
 def results():
-    if "user_is" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
     return render_template("results.html")
