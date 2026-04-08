@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthTech Results</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Results | Smart Workout Recommender</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+<body>
+    <div class="page">
+        <div class="container">
+            <div class="topbar">
+                <a class="back" href="{{ url_for('manual') }}">← Back</a>
+                <h1>🏋️ Workout Results</h1>
+            </div>
 
-
-<div class="page-wrapper">
-
-        <h1 class="main-title">This page will display the results</h1>
-
-</div>
-
+            <h2>Generated Prompt</h2>
+            <pre style="white-space: pre-wrap;">{{ workout.prompt }}</pre>
+        </div>
+    </div>
 </body>
 </html>
