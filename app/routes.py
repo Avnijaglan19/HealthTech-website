@@ -5,6 +5,7 @@ from flask import render_template, request, redirect, url_for, session, flash
 from app import app
 from app.forms import LoginForm, WorkoutForm
 from app.workout import Workout
+from app.openaiapi import generateWorkoutPlan
 from supabase_client import supabase
 
 
@@ -119,5 +120,20 @@ def results():
     if workout_data is None:
         flash("No workout data found. Please submit the form first.")
         return redirect(url_for("manual"))
-    
-    return render_template("results.html", workout=workout_data)
+
+    prompt = workout_data.get("prompt", "")
+    if not prompt:
+        flash("Workout prompt is missing. Please submit the form again.")
+        return redirect(url_for("manual"))
+
+    try:
+        generated_plan = generateWorkoutPlan(prompt)
+    except Exception:
+        flash("Unable to generate workout plan right now. Please try again.")
+        return redirect(url_for("manual"))
+
+    return render_template(
+        "results.html",
+        workout=workout_data,
+        generated_plan=generated_plan,
+    )
