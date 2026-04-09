@@ -5,6 +5,7 @@ from flask import render_template, request, redirect, url_for, session, flash
 from app import app
 from app.forms import LoginForm, WorkoutForm
 from app.workout import Workout
+from app.openaiapi import generateWorkoutPlan
 from supabase_client import supabase
 
 
@@ -49,22 +50,22 @@ def signup():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
 
-        print(first_name, last_name, email, password)
         if password != confirm_password:
-            return "Passwords do not match"
+            flash("Passwords do not match.")
+            return redirect(url_for('signup'))
 
-        conn = get_db()
-        cursor = conn.cursor()
+        try:
+            supabase.auth.sign_up({
+                "email": email,
+                "password": password
+            })
 
-        cursor.execute("""
-            INSERT INTO users (first_name, last_name, email, password)
-            VALUES (?, ?, ?, ?)
-        """, (first_name, last_name, email, password))
+            flash("Signup successful! Please log in.")
+            return redirect(url_for('login'))
 
-        conn.commit()
-        conn.close()
-
-        return redirect(url_for('login'))
+        except Exception:
+            flash("Unable to create account. Please check your details and try again.")
+            return redirect(url_for('signup'))
 
     return render_template("signup.html")
 
@@ -120,3 +121,24 @@ def results():
     if "user_is" not in session:
         return redirect(url_for("login"))
     return render_template("results.html")
+    workout_data = session.get("workout", None)
+    if workout_data is None:
+        flash("No workout data found. Please submit the form first.")
+        return redirect(url_for("manual"))
+
+    prompt = workout_data.get("prompt", "")
+    if not prompt:
+        flash("Workout prompt is missing. Please submit the form again.")
+        return redirect(url_for("manual"))
+
+    try:
+        generated_plan = generateWorkoutPlan(prompt)
+    except Exception:
+        flash("Unable to generate workout plan right now. Please try again.")
+        return redirect(url_for("manual"))
+
+    return render_template(
+        "results.html",
+        workout=workout_data,
+        generated_plan=generated_plan,
+    )

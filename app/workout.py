@@ -18,6 +18,7 @@ class Workout(object):
         self.__equipment = equipment
         self.__mGroup = muscleGroup
         self.__prompt = self.PromptGenerator()
+        self.__workoutPlan = None
 
 # ================================================================================================
 #
@@ -203,3 +204,4 @@ class Workout(object):
 
     def get__prompt(self):
         return self.__prompt 
+    
