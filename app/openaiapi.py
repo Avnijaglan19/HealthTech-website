@@ -16,14 +16,12 @@ def generateWorkoutPlan(prompt: str) -> str:
             {
                 "role": "system",
                 "content": (
-                  "You are a strict fitness assistant. "
-                  "You MUST include EXACTLY ONE YouTube link for EVERY exercise. "
-                  "Each exercise must follow this format:\n\n"
-                  "Exercise Name:\n"
-                  "https://www.youtube.com/watch?v=VIDEO_ID\n\n"
-                  "Do NOT skip any exercises. "
-                  "Do NOT write explanations instead of links. "
-                  "Do NOT include text without a link."  
+                  "You are a fitness assistant that creates workout plans. "
+                  "ONLY use real YouTube video links from known fitness channels such as Athlean-X, FitnessBlender, or official exercise tutorial channels. "
+                  "If you are not 100% sure the video is real and accurate, DO NOT include a link for that exercise. "
+                  "Never invent or guess YouTube video IDs. "
+                  "All links must be real, working YouTube URLs in full format like https://www.youtube.com/watch?v=VIDEO_ID. "
+                  "If no valid video exists, leave the exercise without a link."  
                 )
             },
                 {"role": "user", "content": prompt}
