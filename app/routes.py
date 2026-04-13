@@ -139,9 +139,9 @@ def virtual():
 
 @app.route("/results")
 def results():
-    if "user_is" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
-    return render_template("results.html")
+
     workout_data = session.get("workout", None)
     if workout_data is None:
         flash("No workout data found. Please submit the form first.")
