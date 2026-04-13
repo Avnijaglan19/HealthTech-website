@@ -55,6 +55,22 @@ form {
   box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 }
 
+.results-box {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.results-pre {
+  white-space: pre-wrap;
+  background: #f8f6ff;
+  border: 1px solid #eadbff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 10px;
+}
+
 /* Section headings */
 h2 {
   font-size: 22px;

@@ -1,12 +1,33 @@
 """
 Main Backend for HealthTech! This file will initialize Flask
 """
+import re
+
 from flask import render_template, request, redirect, url_for, session, flash
 from app import app
 from app.forms import LoginForm, WorkoutForm
 from app.workout import Workout
 from app.openaiapi import generateWorkoutPlan
 from supabase_client import supabase
+
+
+YOUTUBE_URL_RE = re.compile(
+    r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
+    re.IGNORECASE,
+)
+
+
+def extract_youtube_embed_urls(text):
+    embed_urls = []
+    seen = set()
+
+    for video_id in YOUTUBE_URL_RE.findall(text or ""):
+        embed_url = f"https://www.youtube.com/embed/{video_id}"
+        if embed_url not in seen:
+            seen.add(embed_url)
+            embed_urls.append(embed_url)
+
+    return embed_urls
 
 
 @app.route("/")
@@ -137,8 +158,11 @@ def results():
         flash("Unable to generate workout plan right now. Please try again.")
         return redirect(url_for("manual"))
 
+    youtube_embeds = extract_youtube_embed_urls(generated_plan)
+
     return render_template(
         "results.html",
         workout=workout_data,
         generated_plan=generated_plan,
+        youtube_embeds=youtube_embeds,
     )

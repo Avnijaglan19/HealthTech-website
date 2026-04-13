@@ -14,11 +14,32 @@
                 <h1>🏋️ Workout Results</h1>
             </div>
 
-            <h2>Generated Prompt</h2>
-            <pre style="white-space: pre-wrap;">{{ workout.prompt }}</pre>
+            <div class="results-box">
+                <h2>Generated Prompt</h2>
+                <pre class="results-pre">{{ workout.prompt }}</pre>
 
-            <h2>Generated Workout Plan</h2>
-            <pre style="white-space: pre-wrap;">{{ generated_plan }}</pre>
+                <h2>Generated Workout Plan</h2>
+                <pre class="results-pre">{{ generated_plan }}</pre>
+
+                {% if youtube_embeds %}
+                <h2>Exercise Demonstrations</h2>
+                <div class="video-grid">
+                    {% for video_url in youtube_embeds %}
+                    <div class="video-card">
+                        <iframe
+                            width="100%"
+                            height="315"
+                            src="{{ video_url }}"
+                            title="YouTube video player"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </body>

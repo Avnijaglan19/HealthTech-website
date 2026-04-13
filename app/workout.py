@@ -187,6 +187,7 @@ class Workout(object):
         "Output requirements:\n" \
         "1) Warm-up (5-10 minutes).\n" \
         "2) Main workout with sets, reps, rest, and exercise cues.\n" \
+        "for each main exercise, include a youtube link to a demonstration video and double check that the video is available\n" \
         "3) Cool-down (3-5 minutes).\n" \
         "4) Mention substitutions using only listed equipment.\n" \
         "5) Keep total session within the requested duration.\n" \
