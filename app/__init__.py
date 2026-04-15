@@ -18,5 +18,6 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 
+app.secret_key = "healthtech123"
 
 from app import routes
