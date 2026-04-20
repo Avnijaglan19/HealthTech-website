@@ -166,3 +166,7 @@ def results():
         generated_plan=generated_plan,
         youtube_embeds=youtube_embeds,
     )
+
+@app.route ("/forgot-password")
+def forgot_password():
+    return render_template("forgot_password.html")
