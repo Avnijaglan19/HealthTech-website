@@ -43,19 +43,25 @@ def login():
         password = request.form.get("password")
 
         try:
+            print(f"Attempting login with email: {email}")
             result = supabase.auth.sign_in_with_password({
                 "email": email,
                 "password": password
             })
 
+            print(f"Login successful. User ID: {result.user.id}")
             session["user_id"] = result.user.id
             session["email"] = result.user.email
 
             flash("Login successful!")
             return redirect(url_for("home"))
 
-        except Exception:
-            flash("Invalid email or password.")
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            import traceback
+            traceback.print_exc()
+            flash(f"Login failed: {str(e)}")
             return redirect(url_for("login"))
 
     return render_template("login.html")
