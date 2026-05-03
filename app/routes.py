@@ -9,6 +9,9 @@ from app.forms import LoginForm, WorkoutForm
 from app.workout import Workout
 from app.openaiapi import generateWorkoutPlan
 from supabase_client import supabase
+from datetime import date
+from collections import Counter
+
 
 
 YOUTUBE_URL_RE = re.compile(
@@ -77,12 +80,126 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    response = supabase.table("workout_logs") \
+        .select("*") \
+        .eq("user_id", user_id) \
+        .execute()
+
+    workouts = response.data or []
+
+    total_workouts = len(workouts)
+    total_duration = sum([w["duration_minutes"] for w in workouts]) if workouts else 0  # you said you're not tracking this
+    weekly_goal = min(total_workouts * 20, 100)
+
+    latest_workout = workouts[-1] if workouts else None
+
+    return render_template(
+        "dashboard.html",
+        total_workouts=total_workouts,
+        total_duration=total_duration,
+        weekly_goal=weekly_goal,
+        latest_workout=latest_workout
+    )
+
 
 @app.route("/guide")
 def guide():
     return render_template("guide.html")
 
+@app.route("/progress")
+def progress():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    try:
+        from datetime import datetime, date
+        
+        user_id = session["user_id"]
+
+        response = supabase.table("workout_logs") \
+            .select("*") \
+            .eq("user_id", user_id) \
+            .order("workout_date", desc=True) \
+            .execute()
+
+        workouts = response.data or []
+
+        total_workouts = len(workouts)
+
+        total_duration = sum(
+            int(w.get("duration_minutes") or 0) for w in workouts
+        )
+
+        longest_workout = max(
+            [int(w.get("duration_minutes") or 0) for w in workouts],
+            default=0
+        )
+
+        workout_types = [
+            w.get("workout_type", "Other") for w in workouts
+        ]
+
+        type_counts = Counter(workout_types)
+
+        pie_labels = list(type_counts.keys())
+        pie_values = list(type_counts.values())
+
+        # Get current month and year for calendar
+        today = date.today()
+        current_month = today.month
+        current_year = today.year
+        
+        # Get what day of week the 1st of the month is (0=Monday, 6=Sunday)
+        first_day = date(current_year, current_month, 1)
+        first_weekday = first_day.weekday()  # 0=Monday, 6=Sunday
+        
+        # Get number of days in current month
+        if current_month == 12:
+            next_month = date(current_year + 1, 1, 1)
+        else:
+            next_month = date(current_year, current_month + 1, 1)
+        last_day = next_month - __import__('datetime').timedelta(days=1)
+        days_in_month = last_day.day
+        
+        # Extract and format workout dates (YYYY-MM-DD format)
+        workout_dates = set()
+        for w in workouts:
+            date_value = w.get("workout_date")
+            if date_value:
+                # Handle both string and date formats
+                if isinstance(date_value, str):
+                    workout_dates.add(date_value[:10])  # Get YYYY-MM-DD part
+                else:
+                    workout_dates.add(str(date_value))
+
+        recent_workouts = workouts[:5]
+
+        return render_template(
+            "progress.html",
+            workouts=workouts,
+            total_workouts=total_workouts,
+            total_duration=total_duration,
+            longest_workout=longest_workout,
+            pie_labels=pie_labels,
+            pie_values=pie_values,
+            workout_dates=list(workout_dates),
+            recent_workouts=recent_workouts,
+            current_month=current_month,
+            current_year=current_year,
+            first_weekday=first_weekday,
+            days_in_month=days_in_month
+        )
+    except Exception as e:
+        print(f"Progress route error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash(f"Error loading progress: {str(e)}")
+        return redirect(url_for("dashboard"))
 # SIGNUP
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -145,6 +262,16 @@ def manual():
             "muscle_group": workout.get__mGroup(),
             "prompt": workout.get__prompt()
         }
+        supabase.table("workout_logs").insert({
+            "user_id": session["user_id"],
+            "workout_type": workout.get__goal(),
+            "duration_minutes": int(''.join(filter(str.isdigit, workout.get__duration()))),
+            "equipment": workout.get__equipment(),
+            "goal": workout.get__goal(),
+            "notes": workout.get__mGroup(),
+            "workout_date": str(date.today())
+        }).execute()
+
 
         return redirect(url_for("results"))
 
@@ -188,3 +315,11 @@ def results():
         generated_plan=generated_plan,
         youtube_embeds=youtube_embeds,
     )
+
+
+# LOGOUT
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("You have been logged out.")
+    return redirect(url_for("login"))

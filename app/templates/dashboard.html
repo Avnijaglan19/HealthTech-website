@@ -17,12 +17,11 @@
         </div>
 
         <nav>
-            <a href="#" class="active">🏠 Dashboard</a>
+            <a href="{{ url_for('dashboard') }}" class="active">🏠 Dashboard</a>
             <a href="{{ url_for('home') }}"> 👉 Start New Workout</a>
-            <a href="#">📋 My Plan</a>
-            <a href="#">📈 Progress</a>
+            <a href="{{ url_for('progress') }}">📈 Progress</a>
             <a href="{{ url_for('guide') }}"> 📖 User Guide</a>
-            <a href="{{ url_for('login') }}">🚪 Logout</a>
+            <a href="{{ url_for('logout') }}">🚪 Logout</a>
         </nav>
     </aside>
 
@@ -32,18 +31,18 @@
 
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Total Workouts</h3>
-                <p>24</p>
+                <h3> Total Workout</h3>
+                <p>{{ total_workouts }}</p>
             </div>
 
             <div class="stat-card">
-                <h3>Calories Burned</h3>
-                <p>1,250</p>
+                <h3> Total Duration</h3>
+                <p> {{ total_duration }} mins</p>
             </div>
 
             <div class="stat-card">
-                <h3>Weekly Goal</h3>
-                <p>80%</p>
+                <h3> Weekly Goal</h3>
+                <p>{{ weekly_goal }}%</p>
             </div>
         </div>
 

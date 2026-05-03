@@ -10,7 +10,6 @@
     <div class="page">
         <div class="container">
             <div class="topbar">
-                <a class="back" href="{{ url_for('manual') }}">← Back</a>
                 <h1>🏋️ Workout Results</h1>
             </div>
 
@@ -42,6 +41,11 @@
             </div>
         </div>
     </div>
+    <div class="end-workout-container">
+    <a href="{{ url_for('dashboard') }}" class="end-workout-btn">
+        ✅ End Workout
+    </a>
+</div>
 </body>
 </html>
 <p>{{ youtube_embeds }}</p>

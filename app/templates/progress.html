@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Progress</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="guide-page">
+
+<div class="guide-container">
+
+    <div class="progress-header-top">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="guide-logo">
+        <div>
+            <h1>Progress 📈</h1>
+            <p class="subtitle">Track your workouts and see your progress over time.</p>
+        </div>
+    </div>
+
+    <div class="progress-cards">
+        <div class="progress-card">
+            <p>Total Workouts</p>
+            <h2>{{ total_workouts }}</h2>
+            <span>All logged workouts</span>
+        </div>
+
+        <div class="progress-card">
+            <p>Total Duration</p>
+            <h2>{{ total_duration }} min</h2>
+            <span>Total time trained</span>
+        </div>
+
+        <div class="progress-card">
+            <p>Longest Workout</p>
+            <h2>{{ longest_workout }} min</h2>
+            <span>Your longest session</span>
+        </div>
+    </div>
+
+    <div class="progress-grid">
+
+        <div class="progress-section">
+            <h2>Workout Calendar - {{ ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][current_month - 1] }} {{ current_year }}</h2>
+
+            <div class="calendar">
+                <div class="day-name">Mon</div>
+                <div class="day-name">Tue</div>
+                <div class="day-name">Wed</div>
+                <div class="day-name">Thu</div>
+                <div class="day-name">Fri</div>
+                <div class="day-name">Sat</div>
+                <div class="day-name">Sun</div>
+
+                <!-- Empty cells for days before the 1st -->
+                {% for i in range(first_weekday) %}
+                    <div class="calendar-day empty"></div>
+                {% endfor %}
+                
+                <!-- Days of the month -->
+                {% for day in range(1, days_in_month + 1) %}
+                    {% set day_string = "%04d-%02d-%02d"|format(current_year, current_month, day) %}
+
+                    <div class="calendar-day">
+                        <span>{{ day }}</span>
+
+                        {% if day_string in workout_dates %}
+                            <div class="workout-dot"></div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h2>Workout Types Breakdown</h2>
+            <canvas id="workoutPieChart"></canvas>
+        </div>
+
+    </div>
+
+    <div class="progress-section recent-section">
+        <h2>Recent Workouts</h2>
+
+        {% if recent_workouts %}
+            {% for workout in recent_workouts %}
+                <div class="recent-workout">
+                    <div>
+                        <h3>{{ workout.workout_type }}</h3>
+                        <p>
+                            {{ workout.duration_minutes }} min ·
+                            {{ workout.equipment }} ·
+                            {{ workout.goal }}
+                        </p>
+                    </div>
+
+                    <span>{{ workout.workout_date }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No workouts logged yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+<div id="chart-data"
+     data-labels='{{ pie_labels|tojson }}'
+     data-values='{{ pie_values|tojson }}'>
+</div>
+
+<script>
+    const chartData = document.getElementById("chart-data");
+
+    const labels = JSON.parse(chartData.dataset.labels || "[]");
+    const values = JSON.parse(chartData.dataset.values || "[]");
+
+    const ctx = document.getElementById("workoutPieChart");
+
+    new Chart(ctx, {
+        type: "doughnut",
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    "#6d28d9",
+                    "#a78bfa",
+                    "#f472b6",
+                    "#fbbf24",
+                    "#38bdf8"
+                ],
+                borderWidth: 0
+            }]
+        }
+    });
+</script>
+
+    <div class="back-btn">
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </div>
+
+</div>
+
+</body>
+</html>
