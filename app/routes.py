@@ -32,7 +32,16 @@ def extract_youtube_embed_urls(text):
 
 @app.route("/")
 def first_page():
-    return redirect(url_for("signup"))
+    print("DEBUG: Root route (/) called")
+    print(f"DEBUG: Session content: {session}")
+    print("DEBUG: About to render onboarding.html")
+    return render_template("onboarding.html")
+
+
+# ONBOARDING
+@app.route("/onboarding")
+def onboarding():
+    return render_template("onboarding.html")
 
 
 # LOGIN
@@ -54,7 +63,7 @@ def login():
             session["email"] = result.user.email
 
             flash("Login successful!")
-            return redirect(url_for("home"))
+            return redirect(url_for("dashboard"))
 
         except Exception as e:
             print(f"Login error: {str(e)}")
@@ -66,6 +75,13 @@ def login():
 
     return render_template("login.html")
 
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
+
+@app.route("/guide")
+def guide():
+    return render_template("guide.html")
 
 # SIGNUP
 @app.route("/signup", methods=["GET", "POST"])
@@ -172,7 +188,3 @@ def results():
         generated_plan=generated_plan,
         youtube_embeds=youtube_embeds,
     )
-
-@app.route ("/forgot-password")
-def forgot_password():
-    return render_template("forgot_password.html")

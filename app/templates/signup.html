@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HealthTech Sign Up</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body class="auth-page">
@@ -13,33 +14,56 @@
 
 <div class="page-wrapper">
 
-    <div class="login-box">
+    <div class="auth-card">
+        
+        <div class="auth-header">
+            <img src="{{ url_for('static', filename='logo.png') }}"
+                    alt="Fitness Logo"
+                    class="auth-logo">
+            <h1>FITNESS APP</h1>
+        </div>
 
-        <h1 class="main-title">HEALTHTECH</h1>
+        <div class="auth-body">
+            <h2>Sign Up</h2>
+            <p class="auth-subtitle">Enter your info to keep it going!</p>
 
-        <h2>Create Account</h2>
-        <p class="subtitle">Start your fitness journey</p>
+            <form method="POST">
 
-        <form method="POST">
+                <div class="form-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="first_name" placeholder="Name" required>
+                </div>
 
-            <input type="text" name="first_name" placeholder="First Name" required>
+                <div class="form-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="last_name" placeholder="Last Name" required>
+                </div>
 
-            <input type="text" name="last_name" placeholder="Last Name" required>
+                <div class="form-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="Email" required>
+                </div>
 
-            <input type="email" name="email" placeholder="Email" required>
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
 
-            <input type="password" name="password" placeholder="Password" required>
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                </div>
 
-            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                <button type="submit" class="auth-btn">Sign Up</button>
 
-            <button type="submit">Sign Up</button>
+            </form>
 
-        </form>
+            <p class="auth-toggle">
+                Already have an account?
+                <a href="{{ url_for('login') }}">Login Now</a>
+            </p>
 
-        <p class="signup-link">
-            Already have an account?
-            <a href="{{ url_for('login') }}">Login</a>
-        </p>
+        </div>
 
     </div>
 

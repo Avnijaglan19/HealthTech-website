@@ -2,65 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body class="dashboard-page">
 
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h1>Hey, {{ full_name }} 👋</h1>
-            <p>Welcome back! Here is your workout progress.</p>
+<div class="dashboard-layout">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+            <h2>SmartFit</h2>
         </div>
 
-        <div class="dashboard-cards">
-            <div class="dashboard-card">
+        <nav>
+            <a href="#" class="active">🏠 Dashboard</a>
+            <a href="{{ url_for('home') }}"> 👉 Start New Workout</a>
+            <a href="#">📋 My Plan</a>
+            <a href="#">📈 Progress</a>
+            <a href="{{ url_for('guide') }}"> 📖 User Guide</a>
+            <a href="{{ url_for('login') }}">🚪 Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <h1>Welcome Back 👋</h1>
+        <p class="dashboard-subtitle">Here is your workout overview for today.</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
                 <h3>Total Workouts</h3>
-                <p>{{ total_workouts }}</p>
+                <p>24</p>
             </div>
 
-            <div class="dashboard-card">
-                <h3>Total Minutes</h3>
-                <p>{{ total_minutes }}</p>
+            <div class="stat-card">
+                <h3>Calories Burned</h3>
+                <p>1,250</p>
             </div>
 
-            <div class="dashboard-card">
-                <h3>Latest Workout</h3>
-                {% if latest_workout %}
-                    <p>{{ latest_workout.workout_type }}</p>
-                {% else %}
-                    <p>No workouts yet</p>
-                {% endif %}
+            <div class="stat-card">
+                <h3>Weekly Goal</h3>
+                <p>80%</p>
             </div>
         </div>
 
-        <div class="dashboard-section">
-            <h2>Recent Workouts</h2>
+        <section class="dashboard-section">
+            <h2>Recommended Workout</h2>
+            <div class="workout-card">
+                <h3>Full Body Strength</h3>
+                <p>45 minutes · Beginner Friendly · Dumbbells</p>
+                <button>Start Workout</button>
+            </div>
+        </section>
+    </main>
 
-            {% if logs %}
-                <div class="workout-list">
-                    {% for log in logs %}
-                        <div class="workout-item">
-                            <h4>{{ log.workout_type }}</h4>
-                            <p><strong>Duration:</strong> {{ log.duration_minutes }} min</p>
-                            <p><strong>Date:</strong> {{ log.workout_date }}</p>
-                            {% if log.notes %}
-                                <p><strong>Notes:</strong> {{ log.notes }}</p>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p>No workouts added yet.</p>
-            {% endif %}
-        </div>
-
-        <div class="dashboard-buttons">
-            <a href="{{ url_for('manual') }}" class="hero-btn-link">Create Workout</a>
-            <a href="{{ url_for('home') }}" class="hero-btn-link">Go Home</a>
-        </div>
-    </div>
+</div>
 
 </body>
 </html>

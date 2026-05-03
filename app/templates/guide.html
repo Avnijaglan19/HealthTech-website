@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Guide - SmartFit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="guide-page">
+
+
+
+<div class="guide-container">
+
+    <h1>How to Use Smart Workout Recommender</h1>
+    <p class="subtitle">Your step-by-step guide to building workouts</p>
+
+    <!-- STEP 1 -->
+    <div class="guide-card">
+        <h2>Step 1: Login / Signup</h2>
+        <p>Create an account or log in to access your personalized dashboard.</p>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="guide-card">
+        <h2>Step 2: Dashboard</h2>
+        <p>
+            View your workout summary including:
+            <br>• Total workouts
+            <br>• Calories burned
+            <br>• Weekly goal progress
+        </p>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="guide-card">
+        <h2>Step 3: Start Workout</h2>
+        <p>Click on "Start Workout" to begin creating your workout plan.</p>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="guide-card">
+        <h2>Step 4: Choose Method</h2>
+        <p>
+            Select how you want to build your workout:
+            <br><br>
+            <b>Virtual Detection</b> – Detect equipment using camera
+            <br>
+            <b>Manual Input</b> – Select preferences manually
+        </p>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="guide-card">
+        <h2>Step 5: Follow Your Plan</h2>
+        <p>Complete your workout and track your progress over time.</p>
+    </div>
+
+    <!-- TIPS -->
+    <div class="guide-card tips">
+        <h2>Tips for Best Results</h2>
+        <ul>
+            <li>Stay consistent with your workouts</li>
+            <li>Track your progress regularly</li>
+            <li>Try different workout types</li>
+            <li>Set realistic weekly goals</li>
+        </ul>
+    </div>
+
+
+    <div class="back-btn">
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </div>
+
+</div>
+
+</body>
+</html>
