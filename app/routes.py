@@ -210,26 +210,35 @@ def signup():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
 
+        if len(password) < 6:
+            flash("Password must be at least 6 characters long.")
+            return redirect(url_for("signup"))
+
         if password != confirm_password:
             flash("Passwords do not match.")
             return redirect(url_for('signup'))
 
         try:
-            supabase.auth.sign_up({
+            response = supabase.auth.sign_up({
                 "email": email,
                 "password": password
             })
 
+            print("SIGNUP RESPONSE:", response)
+
+            if response.user is None:
+                flash("Signup failed. Email may already be in use or is invalid.")
+                return redirect(url_for('signup'))
+            
             flash("Signup successful! Please log in.")
             return redirect(url_for('login'))
+        except Exception as e:
+            print("SIGNUP ERROR:", e)
+            flash("Error creating account. Please check your details and try again.")
+            return redirect(url_for('login'))
+    return render_template('signup.html')
 
-        except Exception:
-            flash("Unable to create account. Please check your details and try again.")
-            return redirect(url_for('signup'))
-
-    return render_template("signup.html")
-
-
+        
 # HOME
 @app.route("/home")
 def home():
