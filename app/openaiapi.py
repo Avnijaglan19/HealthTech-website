@@ -9,6 +9,14 @@ load_dotenv()
 # Retrieves the value of the environment variable "OPENAI_KEY" and assigns it to the variable api_key
 client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
+# ================================================================================================
+#
+# generateWorkoutPlan(prompt):
+# Purpose: This function takes in a prompt as a string, sends it to the OpenAI API to generate a 
+# workout plan based on the prompt, and returns the generated workout plan as a string
+# 
+# ================================================================================================
+
 def generateWorkoutPlan(prompt: str) -> str:
     response = client.chat.completions.create(
         model="gpt-4o-mini",  # lightweight + cheap model
@@ -30,3 +38,54 @@ def generateWorkoutPlan(prompt: str) -> str:
 
     content = response.choices[0].message.content
     return content if content is not None else ""
+
+# ================================================================================================
+#
+# create_file(file_path):
+# Purpose: This function takes in a file path, creates a file using the OpenAI Files API, and 
+# returns the file ID. 
+# 
+# ================================================================================================
+def createFile(file_path):
+  with open(file_path, "rb") as file_content:
+    result = client.files.create(
+        file=file_content,
+        purpose="vision",
+    )
+    return result.id
+
+
+# ================================================================================================
+#
+# generate_equipment(image_path):
+# Purpose: This function takes in the file path of an image, creates a file using the OpenAI 
+# Files API, and then generates a response from the OpenAI API
+# 
+# ================================================================================================
+
+def generateEquipment(image_path): 
+    file_id = createFile(image_path)
+
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=[{
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "You are an equipment detection assistant. Analyze " \
+                 "the image and identify only equipment from this allowed list:" \
+                 "barbell, bench, bodyweight, cable machine, dumbbells, kettlebell, resistance band, " \
+                 "treadmill, weight plates." \
+                 "Return only the detected equipment as a JSON array of strings. " \
+                 "If more than one item is visible, include all matching items. " \
+                 "If no listed equipment is visible, return \"bodyweight\". " \
+                 "Do not include any explanation, punctuation, or extra text."
+                },
+                {
+                    "type": "input_image",
+                    "file_id": file_id,
+                },
+            ],
+        }], # type: ignore
+    )
+
+    return str(response.output_text or "").lower()

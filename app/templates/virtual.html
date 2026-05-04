@@ -1,71 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Virtual Detection | Smart Workout Recommender</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Virtual Assisted Input | Smart Workout Recommender</title>
 
 
-  <!-- Live Server preview -->
-  <link rel="stylesheet" href= "{{ url_for('static', filename= 'style.css')}}">
-
-  
-  <link rel="stylesheet" href="../static/style.css">
+    <!-- Live Server preview -->
+    <link rel="stylesheet" href="{{ url_for('static' , filename= 'style.css')}}">
+    <link rel="stylesheet" href="../static/style.css">
 
 </head>
 
 <body>
-  <div class="container">
-    <div class="topbar">
-      <a class="back" href="/home">← Back</a>
-      <h2>📷 Virtual Detection (Preview)</h2>
+    <div class="page">
+        <div class="container">
+
+            <div class="topbar">
+                <a class="back" href="/home">← Back</a>
+                <h1>📝 Virtual Assisted Input</h1>
+            </div>
+            
+            <form method="POST" action="{{ url_for('virtual') }}">
+            {{ form.hidden_tag() }}
+
+                <h2>1) Take a picture of Available Equipment</h2>
+                <div class="grid">
+                    <video id="cameraPreview" autoplay playsinline style="width:100%; max-width:480px; border-radius:12px; background:#000;"></video>
+                </div>
+
+                <div class="grid" style="margin-top: 12px; gap: 12px;">
+                    <button type="button" id="takeSnapshotBtn">Take Snapshot</button>
+                </div>
+
+                <p id="cameraStatus" style="margin-top: 8px;"></p>
+                <img id="snapshotPreview" alt="Snapshot preview" hidden style="margin-top: 12px; width:100%; max-width:480px; border-radius:12px; border:1px solid #ddd;" />
+
+                <h2>2) Workout Preferences</h2>
+
+                <div class="row">
+                    <div class="col">
+                        {{ form.goal.label }}
+                        {{ form.goal() }}
+                    </div>
+
+                    <div class="col">
+                        {{ form.difficulty.label }}
+                        {{ form.difficulty() }}
+                    </div>
+
+                    <div class="col">
+                        {{ form.duration.label }}
+                        {{ form.duration() }}
+                    </div>
+                </div>
+
+                <div class="col">
+                    {{ form.muscle_group.label }}
+                    {{ form.muscle_group() }}
+                </div>
+
+            {{ form.submit(class="btn") }}
+            </form>
+
+        </div>
     </div>
 
-    <p class="muted left">
-      For now, this page only opens the camera and shows a live preview. Detection will be added later.
-    </p>
+    <script>
+        const video = document.getElementById('cameraPreview');
+        const takeSnapshotBtn = document.getElementById('takeSnapshotBtn');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const snapshotPreview = document.getElementById('snapshotPreview');
 
-    <div class="camera-box">
-      <video id="video" autoplay playsinline></video>
-    </div>
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+                cameraStatus.textContent = 'Camera ready.';
+            } catch (error) {
+                cameraStatus.textContent = 'Unable to access camera. Use HTTPS or localhost, and allow camera permissions.';
+                console.error(error);
+            }
+        }
 
-    <div class="row-buttons">
-      <button class="btn" id="startBtn" type="button">Start Camera</button>
-      <button class="btn secondary-btn" id="stopBtn" type="button">Stop Camera</button>
-    </div>
+        takeSnapshotBtn.addEventListener('click', async () => {
+            if (!video.srcObject) {
+                cameraStatus.textContent = 'Camera is not active yet.';
+                return;
+            }
 
-    <p id="msg" class="muted left"></p>
-  </div>
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  <script>
-    let stream;
+            const imageData = canvas.toDataURL('image/png');
 
-    async function startCamera() {
-      const msg = document.getElementById("msg");
-      msg.textContent = "";
+            try {
+                const response = await fetch("{{ url_for('capture') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
 
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        document.getElementById("video").srcObject = stream;
-        msg.textContent = "Camera started ✅";
-      } catch (err) {
-        msg.textContent = "Camera access denied or not available ❌";
-        console.error(err);
-      }
-    }
+                const result = await response.json();
 
-    function stopCamera() {
-      const msg = document.getElementById("msg");
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-        document.getElementById("video").srcObject = null;
-        msg.textContent = "Camera stopped.";
-      }
-    }
+                if (!response.ok || !result.ok) {
+                    cameraStatus.textContent = result.error || 'Failed to save snapshot.';
+                    return;
+                }
 
-    document.getElementById("startBtn").addEventListener("click", startCamera);
-    document.getElementById("stopBtn").addEventListener("click", stopCamera);
-  </script>
+                cameraStatus.textContent = 'Snapshot saved.';
+                snapshotPreview.src = `${result.image_url}?t=${Date.now()}`;
+                snapshotPreview.hidden = false;
+            } catch (error) {
+                cameraStatus.textContent = 'Error sending snapshot to server.';
+                console.error(error);
+            }
+        });
+
+        startCamera();
+    </script>
 </body>
 </html>

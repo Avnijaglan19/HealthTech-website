@@ -1,16 +1,16 @@
 """
 Main Backend for HealthTech! This file will initialize Flask
 """
-import re
+import re, os, cv2, tempfile, base64, time
 
-from flask import render_template, request, redirect, url_for, session, flash
-from app import app
+from flask import render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
+from app import app, openaiAPI, camera, workout
 from app.forms import LoginForm, WorkoutForm
-from app.workout import Workout
-from app.openaiapi import generateWorkoutPlan
 from supabase_client import supabase
 from datetime import date
 from collections import Counter
+from app.workout import Workout
+from app.openaiAPI import generateWorkoutPlan
 
 
 
@@ -32,7 +32,7 @@ def extract_youtube_embed_urls(text):
 
     return embed_urls
 
-
+# ROOT
 @app.route("/")
 def first_page():
     print("DEBUG: Root route (/) called")
@@ -59,11 +59,11 @@ def login():
             result = supabase.auth.sign_in_with_password({
                 "email": email,
                 "password": password
-            })
+            }) #type: ignore
 
-            print(f"Login successful. User ID: {result.user.id}")
-            session["user_id"] = result.user.id
-            session["email"] = result.user.email
+            print(f"Login successful. User ID: {result.user.id}") #type: ignore
+            session["user_id"] = result.user.id #type: ignore
+            session["email"] = result.user.email #type: ignore
 
             flash("Login successful!")
             return redirect(url_for("dashboard"))
@@ -78,6 +78,7 @@ def login():
 
     return render_template("login.html")
 
+# DASHBOARD
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -93,7 +94,7 @@ def dashboard():
     workouts = response.data or []
 
     total_workouts = len(workouts)
-    total_duration = sum([w["duration_minutes"] for w in workouts]) if workouts else 0  # you said you're not tracking this
+    total_duration = sum([w["duration_minutes"] for w in workouts]) if workouts else 0  #type: ignore
     weekly_goal = min(total_workouts * 20, 100)
 
     latest_workout = workouts[-1] if workouts else None
@@ -106,11 +107,12 @@ def dashboard():
         latest_workout=latest_workout
     )
 
-
+# GUIDE
 @app.route("/guide")
 def guide():
     return render_template("guide.html")
 
+# PROGRESS
 @app.route("/progress")
 def progress():
     if "user_id" not in session:
@@ -132,16 +134,16 @@ def progress():
         total_workouts = len(workouts)
 
         total_duration = sum(
-            int(w.get("duration_minutes") or 0) for w in workouts
+            int(w.get("duration_minutes") or 0) for w in workouts #type: ignore
         )
 
         longest_workout = max(
-            [int(w.get("duration_minutes") or 0) for w in workouts],
+            [int(w.get("duration_minutes") or 0) for w in workouts], #type: ignore
             default=0
-        )
+        ) 
 
         workout_types = [
-            w.get("workout_type", "Other") for w in workouts
+            w.get("workout_type", "Other") for w in workouts #type: ignore
         ]
 
         type_counts = Counter(workout_types)
@@ -169,7 +171,7 @@ def progress():
         # Extract and format workout dates (YYYY-MM-DD format)
         workout_dates = set()
         for w in workouts:
-            date_value = w.get("workout_date")
+            date_value = w.get("workout_date") #type: ignore
             if date_value:
                 # Handle both string and date formats
                 if isinstance(date_value, str):
@@ -210,7 +212,7 @@ def signup():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
 
-        if len(password) < 6:
+        if len(password) < 6: #type: ignore
             flash("Password must be at least 6 characters long.")
             return redirect(url_for("signup"))
 
@@ -222,7 +224,7 @@ def signup():
             response = supabase.auth.sign_up({
                 "email": email,
                 "password": password
-            })
+            }) #type: ignore
 
             print("SIGNUP RESPONSE:", response)
 
@@ -251,7 +253,7 @@ def manual():
     wform = WorkoutForm()
     if wform.validate_on_submit():
         # Create Workout object with form data
-        workout = Workout(
+        workout_obj = Workout(
             wform.difficulty.data,
             wform.duration.data,
             wform.goal.data,
@@ -259,6 +261,71 @@ def manual():
             wform.muscle_group.data,
         )
         
+        # Generate the prompt
+        workout_obj.PromptGenerator()
+        
+        # Store workout object in session
+        session["workout"] = {
+            "difficulty": workout_obj.get__diff(),
+            "duration": workout_obj.get__duration(),
+            "goal": workout_obj.get__goal(),
+            "equipment": workout_obj.get__equipment(),
+            "muscle_group": workout_obj.get__mGroup(),
+            "prompt": workout_obj.get__prompt()
+        }
+        supabase.table("workout_logs").insert({
+            "user_id": session["user_id"],
+            "workout_type": workout_obj.get__goal(),
+            "duration_minutes": int(''.join(filter(str.isdigit, workout_obj.get__duration()))),
+            "equipment": workout_obj.get__equipment(),
+            "goal": workout_obj.get__goal(),
+            "notes": workout_obj.get__mGroup(),
+            "workout_date": str(date.today())
+        }).execute()
+
+
+        return redirect(url_for("results"))
+
+
+    return render_template("manual.html", title="Workout Generator", form=wform)
+
+
+# VIRTUAL 
+@app.route("/virtual", methods=["GET", "POST"])
+def virtual():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    wform = WorkoutForm()
+
+    if wform.validate_on_submit():
+
+        image_path = camera.capture_image()
+
+        if image_path:
+            detected_equipment = openaiAPI.generateEquipment(image_path)
+            session['detected_equipment'] = detected_equipment
+            
+            if detected_equipment:
+                if wform.equip.data is None:
+                    wform.equip.data = []
+                    wform.equip.data.append(detected_equipment)
+        else:
+            detected_equipment = None
+            flash('No image was captured, so equipment could not be detected.')
+        
+
+        # Create Workout object with form data with equipment parameter in correct position
+        workout = Workout(
+            wform.difficulty.data,      # diff
+            wform.duration.data,        # duration
+            wform.goal.data,            # goal
+#            wform.equip.data,   # equipment (4th parameter)
+            detected_equipment,  # equipment (4th parameter)
+            wform.muscle_group.data,    # muscleGroup (5th parameter)
+        ) # type: ignore
+
+        #workout.extend__equipment(detected_equipment)
         # Generate the prompt
         workout.PromptGenerator()
         
@@ -271,30 +338,53 @@ def manual():
             "muscle_group": workout.get__mGroup(),
             "prompt": workout.get__prompt()
         }
-        supabase.table("workout_logs").insert({
-            "user_id": session["user_id"],
-            "workout_type": workout.get__goal(),
-            "duration_minutes": int(''.join(filter(str.isdigit, workout.get__duration()))),
-            "equipment": workout.get__equipment(),
-            "goal": workout.get__goal(),
-            "notes": workout.get__mGroup(),
-            "workout_date": str(date.today())
-        }).execute()
+        
+        return redirect(url_for('results'))
+    
+    return render_template("virtual.html", title="Image Recognition", form=wform)
 
 
-        return redirect(url_for("results"))
+@app.route('/capture', methods=['POST'])
+def capture():
+    try:
+        payload = request.get_json(silent=True) or {}
+        image_data = payload.get('image')
+
+        if not image_data:
+            return jsonify({"ok": False, "error": "No image data received"}), 400
+
+        # data URL -> raw base64
+        if ',' in image_data:
+            image_data = image_data.split(',', 1)[1]
+
+        binary = base64.b64decode(image_data)
+
+        repo_root = os.path.dirname(app.root_path)
+        tmp_dir = os.path.join(repo_root, 'tmp')
+        os.makedirs(tmp_dir, exist_ok=True)
+
+        # Always overwrite the previous capture so only the latest PNG is kept.
+        filename = "capture.png"
+        path = os.path.join(tmp_dir, filename)
+        with open(path, 'wb') as f:
+            f.write(binary)
+
+        image_url = url_for('tmp_file', filename=filename)
+        session['captured_image_path'] = path
+        session['captured_image'] = image_url
+        return jsonify({"ok": True, "image_url": image_url})
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Camera error: {e}"}), 500
 
 
-    return render_template("manual.html", title="Workout Generator", form=wform)
+@app.route('/tmp/<path:filename>')
+def tmp_file(filename):
+    repo_root = os.path.dirname(app.root_path)
+    tmp_dir = os.path.join(repo_root, 'tmp')
+    return send_from_directory(tmp_dir, filename)
 
 
-# VIRTUAL 
-@app.route("/virtual")
-def virtual():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    return render_template("virtual.html")
-
+# RESULTS
 @app.route("/results")
 def results():
     if "user_id" not in session:
@@ -323,6 +413,8 @@ def results():
         workout=workout_data,
         generated_plan=generated_plan,
         youtube_embeds=youtube_embeds,
+        captured_image=session.get('captured_image', None),
+        detected_equipment=session.get('detected_equipment', "No equipment detected")
     )
 
 
