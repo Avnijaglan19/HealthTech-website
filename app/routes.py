@@ -4,13 +4,13 @@ Main Backend for HealthTech! This file will initialize Flask
 import re, os, cv2, tempfile, base64, time
 
 from flask import render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
-from app import app, openaiAPI, camera, workout
+from . import app, openaiAPI, camera, workout
 from app.forms import LoginForm, WorkoutForm
 from supabase_client import supabase
 from datetime import date
 from collections import Counter
 from app.workout import Workout
-from app.openaiAPI import generateWorkoutPlan
+from .openaiapi import generateWorkoutPlan
 
 
 

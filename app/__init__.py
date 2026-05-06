@@ -20,4 +20,6 @@ app.config.from_object(Config)
 
 app.secret_key = "healthtech123"
 
+from . import openaiapi as openaiAPI, camera, workout
+
 from app import routes
