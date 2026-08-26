@@ -72,14 +72,38 @@
         const cameraStatus = document.getElementById('cameraStatus');
         const snapshotPreview = document.getElementById('snapshotPreview');
 
+        // Disable snapshot button until camera is fully ready
+        takeSnapshotBtn.disabled = true;
+
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 video.srcObject = stream;
-                cameraStatus.textContent = 'Camera ready.';
+
+                // when metadata is loaded we know dimensions and stream is active
+                video.addEventListener('loadedmetadata', () => {
+                    takeSnapshotBtn.disabled = false;
+                    cameraStatus.textContent = 'Camera ready.';
+                }, { once: true });
+
+                // if the track ends (user revokes permission or another app takes camera)
+                const tracks = stream.getVideoTracks();
+                if (tracks && tracks[0]) {
+                    tracks[0].addEventListener('ended', () => {
+                        cameraStatus.textContent = 'Camera has been disconnected.';
+                        takeSnapshotBtn.disabled = true;
+                    });
+                }
             } catch (error) {
-                cameraStatus.textContent = 'Unable to access camera. Use HTTPS or localhost, and allow camera permissions.';
-                console.error(error);
+                // More explicit error feedback for common cases
+                if (error && error.name === 'NotAllowedError') {
+                    cameraStatus.textContent = 'Camera access denied. Allow camera in the site settings.';
+                } else if (error && error.name === 'NotFoundError') {
+                    cameraStatus.textContent = 'No camera found on this device.';
+                } else {
+                    cameraStatus.textContent = 'Unable to access camera. Use HTTPS or localhost, and allow camera permissions.';
+                }
+                console.error('getUserMedia error:', error);
             }
         }
 
@@ -90,8 +114,11 @@
             }
 
             const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            // fallback sizes if metadata not available
+            const width = video.videoWidth || video.clientWidth || 640;
+            const height = video.videoHeight || video.clientHeight || 480;
+            canvas.width = width;
+            canvas.height = height;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -118,10 +145,11 @@
                 snapshotPreview.hidden = false;
             } catch (error) {
                 cameraStatus.textContent = 'Error sending snapshot to server.';
-                console.error(error);
+                console.error('Snapshot upload error:', error);
             }
         });
 
+        // Kick off camera initialization
         startCamera();
     </script>
 </body>

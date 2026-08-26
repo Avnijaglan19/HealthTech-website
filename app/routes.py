@@ -4,7 +4,7 @@ Main Backend for HealthTech! This file will initialize Flask
 import re, os, cv2, tempfile, base64, time
 
 from flask import render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
-from . import app, openaiAPI, camera, workout
+from . import app
 from app.forms import LoginForm, WorkoutForm
 from supabase_client import supabase
 from datetime import date
@@ -293,6 +293,8 @@ def manual():
 # VIRTUAL 
 @app.route("/virtual", methods=["GET", "POST"])
 def virtual():
+    from . import openaiAPI, camera
+    
     if "user_id" not in session:
         return redirect(url_for("login"))
     
@@ -300,28 +302,33 @@ def virtual():
 
     if wform.validate_on_submit():
 
-        image_path = camera.capture_image()
+        image_path = session.get('captured_image_path')
+        if not image_path:
+            image_path = camera.capture_image()
 
         if image_path:
             detected_equipment = openaiAPI.generateEquipment(image_path)
             session['detected_equipment'] = detected_equipment
-            
+
             if detected_equipment:
-                if wform.equip.data is None:
-                    wform.equip.data = []
-                    wform.equip.data.append(detected_equipment)
+                selected = list(wform.equip.data or [])
+                for item in detected_equipment:
+                    if item not in selected:
+                        selected.append(item)
+                wform.equip.data = selected
         else:
             detected_equipment = None
             flash('No image was captured, so equipment could not be detected.')
-        
+
+        if detected_equipment is None:
+            detected_equipment = list(wform.equip.data or [])
 
         # Create Workout object with form data with equipment parameter in correct position
         workout = Workout(
             wform.difficulty.data,      # diff
             wform.duration.data,        # duration
             wform.goal.data,            # goal
-#            wform.equip.data,   # equipment (4th parameter)
-            detected_equipment,  # equipment (4th parameter)
+            wform.equip.data or detected_equipment,
             wform.muscle_group.data,    # muscleGroup (5th parameter)
         ) # type: ignore
 

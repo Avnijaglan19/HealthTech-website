@@ -1,4 +1,7 @@
+import json
 import os
+import re
+
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -8,6 +11,84 @@ load_dotenv()
 
 # Retrieves the value of the environment variable "OPENAI_KEY" and assigns it to the variable api_key
 client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
+
+ALLOWED_EQUIPMENT = [
+    "barbell",
+    "bench",
+    "bodyweight",
+    "cable machine",
+    "dumbbells",
+    "kettlebell",
+    "resistance band",
+    "treadmill",
+    "weight plates",
+]
+
+
+def normalize_equipment_name(value):
+    cleaned = str(value or "").strip().lower()
+    if not cleaned:
+        return None
+
+    aliases = {
+        "dumbbell": "dumbbells",
+        "dumbbells": "dumbbells",
+        "kettlebells": "kettlebell",
+        "kettlebell": "kettlebell",
+        "resistance bands": "resistance band",
+        "resistance band": "resistance band",
+        "cable_machine": "cable machine",
+        "cable-machine": "cable machine",
+        "weight plate": "weight plates",
+        "weight plates": "weight plates",
+        "body weights": "bodyweight",
+        "bodyweight": "bodyweight",
+    }
+
+    return aliases.get(cleaned, cleaned)
+
+
+def parse_equipment_response(raw_text):
+    text = (raw_text or "").strip()
+    if not text:
+        return ["bodyweight"]
+
+    cleaned = re.sub(r"```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+    cleaned = cleaned.strip("`\n \t")
+
+    if not cleaned:
+        return ["bodyweight"]
+
+    if cleaned.lower() in {"bodyweight", "no equipment detected", "none", "no equipment", "no listed equipment visible"}:
+        return ["bodyweight"]
+
+    try:
+        parsed = json.loads(cleaned)
+    except json.JSONDecodeError:
+        match = re.findall(r'"([^"]+)"', cleaned)
+        if match:
+            parsed = match
+        else:
+            parsed = [cleaned]
+
+    if isinstance(parsed, str):
+        parsed = [parsed]
+
+    if not isinstance(parsed, list):
+        parsed = [str(parsed)]
+
+    normalized = []
+    seen = set()
+    for item in parsed:
+        normalized_name = normalize_equipment_name(item)
+        if normalized_name in ALLOWED_EQUIPMENT and normalized_name not in seen:
+            normalized.append(normalized_name)
+            seen.add(normalized_name)
+
+    if not normalized:
+        return ["bodyweight"]
+
+    return normalized
 
 # ================================================================================================
 #
@@ -74,11 +155,11 @@ def generateEquipment(image_path):
                 {"type": "input_text", "text": "You are an equipment detection assistant. Analyze " \
                  "the image and identify only equipment from this allowed list:" \
                  "barbell, bench, bodyweight, cable machine, dumbbells, kettlebell, resistance band, " \
-                 "treadmill, weight plates." \
-                 "Return only the detected equipment as a JSON array of strings. " \
-                 "If more than one item is visible, include all matching items. " \
-                 "If no listed equipment is visible, return \"bodyweight\". " \
-                 "Do not include any explanation, punctuation, or extra text."
+                 "treadmill, weight plates. " \
+                 "Return only valid JSON in this exact format: [\"barbell\", \"bench\"] " \
+                 "or [\"bodyweight\"]. " \
+                 "If no listed equipment is visible, return [\"bodyweight\"]. " \
+                 "Do not include any explanation, markdown fences, or extra text."
                 },
                 {
                     "type": "input_image",
@@ -88,4 +169,4 @@ def generateEquipment(image_path):
         }], # type: ignore
     )
 
-    return str(response.output_text or "").lower()
+    return parse_equipment_response(response.output_text or "")
